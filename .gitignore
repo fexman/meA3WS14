@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!lab3.pdf
+!Entities2Forms.atl
+
+# ...even if they are in subdirectories
+!*/
