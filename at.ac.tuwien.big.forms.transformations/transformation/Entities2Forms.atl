@@ -3,10 +3,48 @@
 module Entities2Forms;
 create OUT : Forms from IN : Forms;
 
+helper def : welcomeFormSet : Boolean = false;
+helper def : welcomeFormHelper : Boolean = false;
+
 rule EntityModel2FormModel {
 	from
 		em : Forms!EntityModel
 	to 
 		fm : Forms!FormModel (
+			forms <- em.entityModelElements -> select(element| element->oclIsTypeOf(Forms!Entity))
 		)
+}
+
+rule Entity2Form {
+	from 
+		e : Forms!Entity
+	to 
+		f : Forms!Form (
+			name <- e.name,
+			title <- e.name
+		)
+	do {
+		-- set cross reference
+		f.entity <- e;
+		
+		-- set welcomeform
+		-- has a welcomeform been set yet? if not then ...
+		if (not thisModule.welcomeFormSet) {
+			for (r in Forms!Relationship.allInstances()) {
+				-- are there relationships pointing to the current entity?
+				if (r.target = e) {
+					thisModule.welcomeFormHelper <- true;
+				}
+			}
+			-- if there have been relationsships pointing to the current entity, reset helper
+			if (thisModule.welcomeFormHelper = true) {
+				thisModule.welcomeFormHelper <- false;
+			-- else set welcomeFormSet to true and set f.welcomeForm to true
+			} else {
+				f.welcomeForm <- true;
+				thisModule.welcomeFormSet <- true;
+			}
+		}
+		
+	}
 }
