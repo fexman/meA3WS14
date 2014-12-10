@@ -22,13 +22,13 @@ rule Entity2Form {
 		f : Forms!Form (
 			name <- e.name,
 			title <- e.name,
-			pages <- e.features
+			pages <- e.features -> select(element | element->oclIsTypeOf(Forms!Relationship))
 			)
 	do {
 		-- set cross reference
 		f.entity <- e;
 		-- add details page
-		f.pages <- f.pages.append(thisModule.newDetailsPage(e.name));
+		f.pages <- f.pages.append(thisModule.newDetailPage(e));
 		
 		-- set welcomeform
 		-- has a welcomeform been set yet? if not then ...
@@ -52,10 +52,11 @@ rule Entity2Form {
 	}
 }
 
-rule newDetailsPage(name: String) {
+rule newDetailPage(e: Forms!Entity) {
 	to
 		p: Forms!Page (
-			title <- name+' Details'
+			title <- e.name,
+			pageElements <-  e.features -> select(element | element->oclIsTypeOf(Forms!Attribute))
 			)
 	do {
 		p;
