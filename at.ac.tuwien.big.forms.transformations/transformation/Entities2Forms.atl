@@ -21,8 +21,7 @@ rule Entity2Form {
 	to 
 		f : Forms!Form (
 			name <- e.name,
-			title <- e.name,
-			pages <- e.features -> select(element | element->oclIsTypeOf(Forms!Relationship))
+			title <- e.name
 			)
 	do {
 		-- set cross reference
@@ -55,7 +54,7 @@ rule Entity2Form {
 rule newDetailPage(e: Forms!Entity) {
 	to
 		p: Forms!Page (
-			title <- e.name,
+			title <- e.name+' Details',
 			pageElements <-  e.features -> select(element | element->oclIsTypeOf(Forms!Attribute))
 			)
 	do {
@@ -71,9 +70,15 @@ abstract rule Feature2PageElement {
 		a: Forms!Feature
 	to
 		t: Forms!PageElement (
-			label <- a.name.toUpper().substring(1, 1) + a.name.substring(2, a.name -> size()),
-			-- change this
-			elementID <- a.name
+			label <- a.name.toUpper().substring(1, 1) + a.name.substring(2, a.name -> size())
+		)
+}
+
+abstract rule Attribute2AttributePageElement extends Feature2PageElement {
+	from
+		a: Forms!Attribute
+	to
+		t: Forms!AttributePageElement (
 		)
 }
 
@@ -86,58 +91,79 @@ abstract rule Feature2PageElement {
 --		)
 --}
 
-rule Date2DateSelectionField extends Feature2PageElement {
+rule Date2DateSelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Date')
 	to
 		t: Forms!DateSelectionField	
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule Time2TimeSelectionField extends Feature2PageElement {
+rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Time')
 	to
 		t: Forms!TimeSelectionField
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule Text2TextArea extends Feature2PageElement {
+rule Text2TextArea extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Text')
 	to
 		t: Forms!TextArea
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule Boolean2SelectionField extends Feature2PageElement {
+rule Boolean2SelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Boolean')
 	to
 		t: Forms!SelectionField
+	do {
+		t.attribute <- a;
+	}	
 }
 
-rule None2SelectionField extends Feature2PageElement {
+rule None2SelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'None')
 	to
 		t: Forms!SelectionField
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule String2TextField extends Feature2PageElement {
+rule String2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'String')
 	to
 		t: Forms!TextField
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule Integer2TextField extends Feature2PageElement {
+rule Integer2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Integer')
 	to
 		t: Forms!TextField (
 			format <- '^[0-9]+$'
 		)
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule Email2TextField extends Feature2PageElement {
+rule Email2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Email')
 	to
@@ -145,15 +171,21 @@ rule Email2TextField extends Feature2PageElement {
 			-- this doesn't work when actual format is given
 			format <- '^[0-9]+$'
 		)
+	do {
+		t.attribute <- a;
+	}
 }
 
-rule Year2TextField extends Feature2PageElement {
+rule Year2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Year')
 	to
 		t: Forms!TextField (
 			format <- '^[0-9]+$'
 		)
+	do {
+		t.attribute <- a;
+	}
 }
 
 
