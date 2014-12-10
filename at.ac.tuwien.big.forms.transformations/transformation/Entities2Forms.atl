@@ -5,6 +5,7 @@ create OUT : Forms from IN : Forms;
 
 helper def : welcomeFormSet : Boolean = false;
 helper def : welcomeFormHelper : Boolean = false;
+helper def : elementIdHelper : Integer = 0;
 
 rule EntityModel2FormModel {
 	from
@@ -74,6 +75,7 @@ abstract rule Feature2PageElement {
 		)
 }
 
+
 abstract rule Attribute2AttributePageElement extends Feature2PageElement {
 	from
 		a: Forms!Attribute
@@ -82,15 +84,6 @@ abstract rule Attribute2AttributePageElement extends Feature2PageElement {
 		)
 }
 
---rule Attribute2Attribute {
---	from
---		x: Forms!Attribute (x.eContainer().oclIsKindOf(Forms!AttributePageElement))
---	to
---		y: Forms!Attribute (
---			ref <- thisModule.resolveTemp(x, 't')
---		)
---}
-
 rule Date2DateSelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (a.type.toString() = 'Date')
@@ -98,6 +91,8 @@ rule Date2DateSelectionField extends Attribute2AttributePageElement {
 		t: Forms!DateSelectionField	
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -108,6 +103,8 @@ rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 		t: Forms!TimeSelectionField
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -118,6 +115,8 @@ rule Text2TextArea extends Attribute2AttributePageElement {
 		t: Forms!TextArea
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -128,6 +127,8 @@ rule Boolean2SelectionField extends Attribute2AttributePageElement {
 		t: Forms!SelectionField
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}	
 }
 
@@ -138,6 +139,8 @@ rule None2SelectionField extends Attribute2AttributePageElement {
 		t: Forms!SelectionField
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -148,6 +151,8 @@ rule String2TextField extends Attribute2AttributePageElement {
 		t: Forms!TextField
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -160,6 +165,8 @@ rule Integer2TextField extends Attribute2AttributePageElement {
 		)
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -173,6 +180,8 @@ rule Email2TextField extends Attribute2AttributePageElement {
 		)
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
@@ -185,6 +194,8 @@ rule Year2TextField extends Attribute2AttributePageElement {
 		)
 	do {
 		t.attribute <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
 	}
 }
 
