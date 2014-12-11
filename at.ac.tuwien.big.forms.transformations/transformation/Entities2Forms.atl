@@ -242,7 +242,7 @@ rule Year2TextField extends Attribute2AttributePageElement {
 	}
 }
 
-rule test{
+rule Relationship2PageWithList{
 	from
 		a: Forms!Relationship
 	to
