@@ -1,34 +1,48 @@
 -- @path Forms=/at.ac.tuwien.big.forms.transformations/metamodel/forms.ecore
 
-module Entities2Forms;
-create OUT : Forms from IN : Forms;
 
-helper def : welcomeFormSet : Boolean = false;
-helper def : welcomeFormHelper : Boolean = false;
-helper def : elementIdHelper : Integer = 0;
+module Entities2Forms;
+create OUT: Forms from IN: Forms;
+
+helper def: welcomeFormSet: Boolean =
+	false;
+
+helper def: welcomeFormHelper: Boolean =
+	false;
+
+helper def: elementIdHelper: Integer =
+	0;
 
 rule EntityModel2FormModel {
 	from
-		em : Forms!EntityModel
-	to 
-		fm : Forms!FormModel (
-			forms <- em.entityModelElements -> select(element | element->oclIsTypeOf(Forms!Entity))
+		em: Forms!EntityModel
+	to
+		fm: Forms!FormModel (
+			forms <- em.entityModelElements -> select(element | element ->
+					oclIsTypeOf(Forms!Entity))
 		)
 }
 
 rule Entity2Form {
-	from 
-		e : Forms!Entity
-	to 
-		f : Forms!Form (
+	from
+		e: Forms!Entity
+	to
+		f: Forms!Form (
 			name <- e.name,
 			title <- e.name
-			)
+		)
 	do {
-		-- set cross reference
+		  -- set cross reference
 		f.entity <- e;
-		-- add details page
+		  -- add details page
 		f.pages <- f.pages.append(thisModule.newDetailPage(e));
+		  -- add relationship page
+		
+		for(r in e.features -> select(element | element ->
+					oclIsTypeOf(Forms!Relationship))) 
+		{
+			f.pages <- f.pages.append(thisModule.newRelationShipPage(r));
+		}
 		
 		-- set welcomeform
 		-- has a welcomeform been set yet? if not then ...
@@ -38,9 +52,9 @@ rule Entity2Form {
 				if (r.target = e) {
 					thisModule.welcomeFormHelper <- true;
 				}
-			}
-			-- if there have been relationsships pointing to the current entity, reset helper
-			if (thisModule.welcomeFormHelper = true) {
+			} -- if there have been relationsships pointing to the current entity, reset
+					-- helper
+			  if (thisModule.welcomeFormHelper = true) {
 				thisModule.welcomeFormHelper <- false;
 			-- else set welcomeFormSet to true and set f.welcomeForm to true
 			} else {
@@ -55,26 +69,37 @@ rule Entity2Form {
 rule newDetailPage(e: Forms!Entity) {
 	to
 		p: Forms!Page (
-			title <- e.name+' Details',
-			pageElements <-  e.features -> select(element | element->oclIsTypeOf(Forms!Attribute))
-			)
+			title <- e.name + ' Details',
+			pageElements <- e.features -> select(element | element ->
+					oclIsTypeOf(Forms!Attribute))
+		)
+	do {
+		p; 
+	}
+}
+
+rule newRelationShipPage(r: Forms!Relationship) {
+	to
+		p: Forms!Page (
+			title <- r.name.toUpper().substring(1, 1) + r.name.substring(2, r.name ->
+					size()),
+			pageElements <- r
+		)
 	do {
 		p;
 	}
 }
 
-
-
 abstract rule Feature2PageElement {
 	from
-	-- somehow map the AttributePageElement with it's Attribute
+		-- somehow map the AttributePageElement with it's Attribute
 		a: Forms!Feature
 	to
 		t: Forms!PageElement (
-			label <- a.name.toUpper().substring(1, 1) + a.name.substring(2, a.name -> size())
+			label <- a.name.toUpper().substring(1, 1) + a.name.substring(2, a.name ->
+					size())
 		)
 }
-
 
 abstract rule Attribute2AttributePageElement extends Feature2PageElement {
 	from
@@ -86,7 +111,9 @@ abstract rule Attribute2AttributePageElement extends Feature2PageElement {
 
 rule Date2DateSelectionField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Date')
+		a: Forms!Attribute (
+			a.type.toString() = 'Date'
+		)
 	to
 		t: Forms!DateSelectionField	
 	do {
@@ -98,7 +125,9 @@ rule Date2DateSelectionField extends Attribute2AttributePageElement {
 
 rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Time')
+		a: Forms!Attribute (
+			a.type.toString() = 'Time'
+		)
 	to
 		t: Forms!TimeSelectionField
 	do {
@@ -110,7 +139,9 @@ rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 
 rule Text2TextArea extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Text')
+		a: Forms!Attribute (
+			a.type.toString() = 'Text'
+		)
 	to
 		t: Forms!TextArea
 	do {
@@ -122,7 +153,9 @@ rule Text2TextArea extends Attribute2AttributePageElement {
 
 rule Boolean2SelectionField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Boolean')
+		a: Forms!Attribute (
+			a.type.toString() = 'Boolean'
+		)
 	to
 		t: Forms!SelectionField
 	do {
@@ -134,7 +167,9 @@ rule Boolean2SelectionField extends Attribute2AttributePageElement {
 
 rule None2SelectionField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'None')
+		a: Forms!Attribute (
+			a.type.toString() = 'None'
+		)
 	to
 		t: Forms!SelectionField
 	do {
@@ -146,7 +181,9 @@ rule None2SelectionField extends Attribute2AttributePageElement {
 
 rule String2TextField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'String')
+		a: Forms!Attribute (
+			a.type.toString() = 'String'
+		)
 	to
 		t: Forms!TextField
 	do {
@@ -158,7 +195,9 @@ rule String2TextField extends Attribute2AttributePageElement {
 
 rule Integer2TextField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Integer')
+		a: Forms!Attribute (
+			a.type.toString() = 'Integer'
+		)
 	to
 		t: Forms!TextField (
 			format <- '^[0-9]+$'
@@ -172,7 +211,9 @@ rule Integer2TextField extends Attribute2AttributePageElement {
 
 rule Email2TextField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Email')
+		a: Forms!Attribute (
+			a.type.toString() = 'Email'
+		)
 	to
 		t: Forms!TextField (
 			-- this doesn't work when actual format is given
@@ -187,7 +228,9 @@ rule Email2TextField extends Attribute2AttributePageElement {
 
 rule Year2TextField extends Attribute2AttributePageElement {
 	from
-		a: Forms!Attribute (a.type.toString() = 'Year')
+		a: Forms!Attribute (
+			a.type.toString() = 'Year'
+		)
 	to
 		t: Forms!TextField (
 			format <- '^[0-9]+$'
@@ -199,4 +242,18 @@ rule Year2TextField extends Attribute2AttributePageElement {
 	}
 }
 
-
+rule test{
+	from
+		a: Forms!Relationship
+	to
+		t: Forms!List (
+			editingForm <- a.target,
+			label <- a.target.name
+		)
+	do {
+		t.relationship <- a;
+		t.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+	}
+		
+}
