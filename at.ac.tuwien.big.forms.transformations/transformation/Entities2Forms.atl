@@ -29,20 +29,15 @@ rule Entity2Form {
 	to
 		f: Forms!Form (
 			name <- e.name,
-			title <- e.name
+			title <- e.name,
+			pages <- e.features -> select(element | element ->
+					oclIsTypeOf(Forms!Relationship))
 		)
 	do {
 		  -- set cross reference
 		f.entity <- e;
 		  -- add details page
 		f.pages <- f.pages.append(thisModule.newDetailPage(e));
-		  -- add relationship page
-		
-		for(r in e.features -> select(element | element ->
-					oclIsTypeOf(Forms!Relationship))) 
-		{
-			f.pages <- f.pages.append(thisModule.newRelationShipPage(r));
-		}
 		
 		-- set welcomeform
 		-- has a welcomeform been set yet? if not then ...
@@ -75,18 +70,6 @@ rule newDetailPage(e: Forms!Entity) {
 		)
 	do {
 		p; 
-	}
-}
-
-rule newRelationShipPage(r: Forms!Relationship) {
-	to
-		p: Forms!Page (
-			title <- r.name.toUpper().substring(1, 1) + r.name.substring(2, r.name ->
-					size()),
-			pageElements <- r
-		)
-	do {
-		p;
 	}
 }
 
@@ -242,18 +225,28 @@ rule Year2TextField extends Attribute2AttributePageElement {
 	}
 }
 
-rule Relationship2PageWithList{
+rule Relationship2Page{
 	from
-		a: Forms!Relationship
+		r: Forms!Relationship
 	to
-		t: Forms!List (
-			editingForm <- a.target,
-			label <- a.target.name
+		p: Forms!Page (
+			title <- r.name.toUpper().substring(1, 1) + r.name.substring(2, r.name -> size()),
+			pageElements <- thisModule.newListPage(r)
 		)
-	do {
-		t.relationship <- a;
-		t.elementID <- thisModule.elementIdHelper.toString();
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
-	}
 		
 }
+
+rule newListPage(r: Forms!Relationship) {
+	to
+		l: Forms!List (
+			editingForm <- r.target,
+			label <- r.target.name
+		)
+	do {
+		l.relationship <- r;
+		l.elementID <- thisModule.elementIdHelper.toString();
+		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		l;
+	}
+}
+
