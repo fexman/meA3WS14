@@ -1,22 +1,33 @@
 -- @path Forms=/at.ac.tuwien.big.forms.transformations/metamodel/forms.ecore
 
-
 module Entities2Forms;
 create OUT: Forms from IN: Forms;
 
-helper def: welcomeFormSet: Boolean =
-	false;
+-- id
+helper def : id : Integer = 0;
+helper context Integer def : inc() : Integer = self + 1; 
 
-helper def: welcomeFormHelper: Boolean =
-	false;
+-- welcomeForm
+helper def: noWelcomeFormYet: Boolean =
+	true;
+helper def: isWelcomeFormCandidate(entity: Forms!Entity) : Boolean =
+if Forms!Relationship.allInstances() -> forAll(r | r.target <> entity) then
+	true
+else
+	false
+endif;
 
-helper def: elementIdHelper: Integer =
-	0;
-
+-- get entities and entities superTypes attributes
 helper def : getAttributes(entity : Forms!Entity) : Sequence(Forms!Attribute) =
-if entity.superType.oclIsUndefined() 
-then entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute))
-else entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute)) -> union(thisModule.getAttributes(entity.superType)) endif;
+if entity.superType.oclIsUndefined() then 
+	entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute))
+else 
+	entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute)) -> union(thisModule.getAttributes(entity.superType))
+endif;
+
+--				   ---
+-- TRANSFORMATIONS ---
+--				   ---
 
 rule EntityModel2FormModel {
 	from
@@ -35,34 +46,24 @@ rule Entity2Form {
 		f: Forms!Form (			
 			name <- e.name,
 			title <- e.name,
-			pages <- e.features -> select(element | element -> 
-				oclIsTypeOf(Forms!Relationship)),
-			pages <- f.pages.append(p)
+			pages <- p,
+			pages <- f.pages.append(e.features -> select(element | element -> 
+				oclIsTypeOf(Forms!Relationship)))
+			
 		),
 		p: Forms!Page (
 			title <- f.name + ' Details',
-			pageElements <- thisModule.getAttributes(e)->collect(elment | thisModule.Attribute2AttributePageElement(elment))
+			pageElements <- thisModule.getAttributes(e)->collect(element | thisModule.Attribute2AttributePageElement(element))
 		)
 	do {
 	    -- set cross reference
 		f.entity <- e;
 		  
 		-- set welcomeform
-		-- has a welcomeform been set yet? if not then ...
-		if (not thisModule.welcomeFormSet) {
-			for (r in Forms!Relationship.allInstances()) {
-				-- are there relationships pointing to the current entity?
-				if (r.target = e) {
-					thisModule.welcomeFormHelper <- true;
-				}
-			} -- if there have been relationsships pointing to the current entity, reset
-					-- helper
-			  if (thisModule.welcomeFormHelper = true) {
-				thisModule.welcomeFormHelper <- false;
-			-- else set welcomeFormSet to true and set f.welcomeForm to true
-			} else {
+		if (thisModule.noWelcomeFormYet) {
+			if (thisModule.isWelcomeFormCandidate(e)) {
+				thisModule.noWelcomeFormYet <- false;
 				f.welcomeForm <- true;
-				thisModule.welcomeFormSet <- true;
 			}
 		}
 	}
@@ -76,7 +77,7 @@ lazy abstract rule Attribute2AttributePageElement {
 		t: Forms!AttributePageElement (
 			label <- a.name.toUpper().substring(1, 1) + a.name.substring(2, a.name ->
 					size()),
-			elementID <- thisModule.elementIdHelper.toString()
+			elementID <- thisModule.id.toString()
 		)
 }
 
@@ -89,7 +90,7 @@ lazy rule Date2DateSelectionField extends Attribute2AttributePageElement {
 		t: Forms!DateSelectionField	
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -102,7 +103,7 @@ lazy rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 		t: Forms!TimeSelectionField
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -115,7 +116,7 @@ lazy rule Text2TextArea extends Attribute2AttributePageElement {
 		t: Forms!TextArea
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -128,7 +129,7 @@ lazy rule Boolean2SelectionField extends Attribute2AttributePageElement {
 		t: Forms!SelectionField
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}	
 }
 
@@ -141,7 +142,7 @@ lazy rule None2SelectionField extends Attribute2AttributePageElement {
 		t: Forms!SelectionField
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -154,7 +155,7 @@ lazy rule String2TextField extends Attribute2AttributePageElement {
 		t: Forms!TextField
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -169,7 +170,7 @@ lazy rule Integer2TextField extends Attribute2AttributePageElement {
 		)
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -184,7 +185,7 @@ lazy rule Email2TextField extends Attribute2AttributePageElement {
 		)
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -200,7 +201,7 @@ lazy rule Year2TextField extends Attribute2AttributePageElement {
 		)
 	do {
 		t.attribute <- a;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 }
 
@@ -215,11 +216,11 @@ rule Relationship2Page{
 		l: Forms!List (
 			editingForm <- r.target,
 			label <- r.target.name,
-			elementID <- thisModule.elementIdHelper.toString()
+			elementID <- thisModule.id.toString()
 		)
 	do {
 		l.relationship <- r;
-		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
+		thisModule.id <- thisModule.id.inc();
 	}
 		
 }
