@@ -37,21 +37,18 @@ rule Entity2Form {
 			name <- e.name,
 			title <- e.name,
 			pages <- e.features -> select(element | element -> 
-				oclIsTypeOf(Forms!Relationship))
+				oclIsTypeOf(Forms!Relationship)),
+			pages <- f.pages.append(p)
+		),
+		p: Forms!Page (
+			title <- f.name + ' Details',
+			pageElements <- e.features -> select(element | element ->
+					oclIsTypeOf(Forms!Attribute))
 		)
 	do {
 	    -- set cross reference
 		f.entity <- e;
 		  
-	    -- add details page
-		f.pages <- f.pages.append(thisModule.newDetailPage(e));
-	    
---	    for (e in f.pages.last().pageElements) {
---	    	if (e.features.oclIsTypeOf(Forms!Attribute)) {
---	    		thisModule.Attribute2AttributePageElement(e);
---	    	}
---	    }
-		
 		-- set welcomeform
 		-- has a welcomeform been set yet? if not then ...
 		if (not thisModule.welcomeFormSet) {
@@ -80,10 +77,7 @@ rule newDetailPage(e: Forms!Entity) {
 			
 			pageElements <- e.features -> select(element | element ->
 					oclIsTypeOf(Forms!Attribute))
---			pageElements <- if e.superType.oclIsUndefined() then e.features -> select(element | element ->
---					oclIsTypeOf(Forms!Attribute)) else e.features -> select(element | element ->
---					oclIsTypeOf(Forms!Attribute)).append(e.superType.features -> select(element | element ->
---					oclIsTypeOf(Forms!Attribute))) endif
+
 		)
 	do {
 		p;
@@ -241,13 +235,8 @@ rule Relationship2Page{
 	to
 		p: Forms!Page (
 			title <- r.name.toUpper().substring(1, 1) + r.name.substring(2, r.name -> size()),
-			pageElements <- thisModule.newListPage(r)
-		)
-		
-}
-
-rule newListPage(r: Forms!Relationship) {
-	to
+			pageElements <- l
+		),
 		l: Forms!List (
 			editingForm <- r.target,
 			label <- r.target.name,
@@ -256,7 +245,7 @@ rule newListPage(r: Forms!Relationship) {
 	do {
 		l.relationship <- r;
 		thisModule.elementIdHelper <- thisModule.elementIdHelper + 1;
-		l;
 	}
+		
 }
 
