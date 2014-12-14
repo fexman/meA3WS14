@@ -16,7 +16,7 @@ helper def: elementIdHelper: Integer =
 helper def : getAttributes(entity : Forms!Entity) : Sequence(Forms!Attribute) =
 if entity.superType.oclIsUndefined() 
 then entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute))
-else entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute)) -> union(entity.superType.features -> select(element | element ->oclIsTypeOf(Forms!Attribute))) endif;
+else entity.features -> select(element | element ->oclIsTypeOf(Forms!Attribute)) -> union(thisModule.getAttributes(entity.superType)) endif;
 
 rule EntityModel2FormModel {
 	from
@@ -70,7 +70,6 @@ rule Entity2Form {
 
 
 lazy abstract rule Attribute2AttributePageElement {
---abstract rule Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute
 	to
@@ -82,7 +81,6 @@ lazy abstract rule Attribute2AttributePageElement {
 }
 
 lazy rule Date2DateSelectionField extends Attribute2AttributePageElement {
---rule Date2DateSelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #Date
@@ -96,7 +94,6 @@ lazy rule Date2DateSelectionField extends Attribute2AttributePageElement {
 }
 
 lazy rule Time2TimeSelectionField extends Attribute2AttributePageElement {
---rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #Time
@@ -110,7 +107,6 @@ lazy rule Time2TimeSelectionField extends Attribute2AttributePageElement {
 }
 
 lazy rule Text2TextArea extends Attribute2AttributePageElement {
---rule Text2TextArea extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #Text
@@ -124,7 +120,6 @@ lazy rule Text2TextArea extends Attribute2AttributePageElement {
 }
 
 lazy rule Boolean2SelectionField extends Attribute2AttributePageElement {
---rule Boolean2SelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #"Boolean"
@@ -138,7 +133,6 @@ lazy rule Boolean2SelectionField extends Attribute2AttributePageElement {
 }
 
 lazy rule None2SelectionField extends Attribute2AttributePageElement {
---rule None2SelectionField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #None
@@ -152,7 +146,6 @@ lazy rule None2SelectionField extends Attribute2AttributePageElement {
 }
 
 lazy rule String2TextField extends Attribute2AttributePageElement {
---rule String2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #"String"
@@ -166,7 +159,6 @@ lazy rule String2TextField extends Attribute2AttributePageElement {
 }
 
 lazy rule Integer2TextField extends Attribute2AttributePageElement {
---rule Integer2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #"Integer"
@@ -182,7 +174,6 @@ lazy rule Integer2TextField extends Attribute2AttributePageElement {
 }
 
 lazy rule Email2TextField extends Attribute2AttributePageElement {
---rule Email2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #Email
@@ -198,7 +189,6 @@ lazy rule Email2TextField extends Attribute2AttributePageElement {
 }
 
 lazy rule Year2TextField extends Attribute2AttributePageElement {
---rule Year2TextField extends Attribute2AttributePageElement {
 	from
 		a: Forms!Attribute (
 			a.type = #Year
